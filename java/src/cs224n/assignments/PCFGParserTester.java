@@ -56,9 +56,36 @@ public class PCFGParserTester {
 		}
 
 		public Tree<String> getBestParse(List<String> sentence) {
-			// TODO: implement this method
+			
+			Tree<String> bestTree;
+			double best_p = 0;
+			List<String> preTerminals = getPreTerminals(sentence);
+			//TODO after getting the pre-terminals, we need to construct several parse trees. 
+			//can use get rules functions in Grammar class, and also calculate the probability of each tree
 			
 			return null;
+		}
+		
+		private List<String> getPreTerminals(List<String> sentence) {
+			List<String> tags = new ArrayList<String>();
+			for (String word : sentence) {
+				String tag = getBestTag(word);
+				tags.add(tag);
+			}
+			return tags;
+		}
+
+		private String getBestTag(String word) {
+			double bestScore = Double.NEGATIVE_INFINITY;
+			String bestTag = null;
+			for (String tag : lexicon.getAllTags()) {
+				double score = lexicon.scoreTagging(word, tag);
+				if (bestTag == null || score > bestScore) {
+					bestScore = score;
+					bestTag = tag;
+				}
+			}
+			return bestTag;
 		}
 
 	}
