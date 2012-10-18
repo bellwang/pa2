@@ -44,12 +44,20 @@ public class PCFGParserTester {
 		public void train(List<Tree<String>> trainTrees) {
 			// TODO: before you generate your grammar, the training trees
 			// need to be binarized so that rules are at most binary
+			for(int i = 0; i < trainTrees.size(); i++)
+			{
+				Tree<String> binaryTree = TreeAnnotations.annotateTree(trainTrees.get(i));
+				trainTrees.remove(i);
+				trainTrees.add(i, binaryTree);
+			}
 			lexicon = new Lexicon(trainTrees);
 			grammar = new Grammar(trainTrees);
+			
 		}
 
 		public Tree<String> getBestParse(List<String> sentence) {
 			// TODO: implement this method
+			
 			return null;
 		}
 
@@ -415,7 +423,7 @@ public class PCFGParserTester {
 				binaryRuleCounter.incrementCount(binaryRule, 1.0);
 			}
 			if (tree.getChildren().size() < 1 || tree.getChildren().size() > 2) {
-				throw new RuntimeException("Attempted to construct a Grammar with an illegal tree: "+tree);
+				throw new RuntimeException("Attempted to construct a Grammar with an illegal tree: "+tree +" "+tree.getChildren().size());
 			}
 			for (Tree<String> child : tree.getChildren()) {
 				tallyTree(child, symbolCounter, unaryRuleCounter,  binaryRuleCounter);
