@@ -62,6 +62,7 @@ public class PCFGParserTester {
 			List<String> preTerminals = getPreTerminals(sentence);
 			//TODO after getting the pre-terminals, we need to construct several parse trees. 
 			//can use get rules functions in Grammar class, and also calculate the probability of each tree
+			System.out.println(preTerminals.toString());
 			
 			return null;
 		}
@@ -632,7 +633,8 @@ public class PCFGParserTester {
 		Map<String, String> options = new HashMap<String, String>();
 		options.put("-path",      "/afs/ir/class/cs224n/pa2/data/");
 		options.put("-data",      "miniTest");
-		options.put("-parser",    "cs224n.assignments.PCFGParserTester$BaselineParser");
+		//options.put("-parser",    "cs224n.assignments.PCFGParserTester$BaselineParser");
+		options.put("-parser",    "cs224n.assignments.PCFGParserTester$PCFGParser");
 		options.put("-maxLength", "20");
 
 		// let command-line options supersede defaults .........................
