@@ -40,6 +40,29 @@ public class PCFGParserTester {
 
 		private Grammar grammar;
 		private Lexicon lexicon;
+		private IdentityHashMap<String, Integer> ihmStrKey;
+		private IdentityHashMap<Integer, String> ihmIntKey;
+		
+		
+		class BackElement
+		{
+			public int parent = -1;
+			public int child1 = -1;
+			public int child2 = -1;
+			public int split = -1;
+			BackElement(int p, int c1, int c2, int s)
+			{
+				parent = p;
+				child1 = c1;
+				child2 = c2;
+				split = s;
+			}
+			BackElement(int p, int c1)
+			{
+				parent = p;
+				child1 = c1;
+			}
+		}
 
 		public void train(List<Tree<String>> trainTrees) {
 			// TODO: before you generate your grammar, the training trees
@@ -52,44 +75,187 @@ public class PCFGParserTester {
 			}
 			lexicon = new Lexicon(trainTrees);
 			grammar = new Grammar(trainTrees);
-			
+			//preterminal tags are in lexicon, other tags are in grammar.
+			//I add tags list in grammar class to store all tags
+			//combine preterminal tags and other tags.
+			Set<String> tags = new HashSet<String>();
+			tags.addAll(lexicon.getAllTags());
+			tags.addAll(grammar.tags);
+			convertSet2IHm(tags);
+			System.out.println("contain " + tags.contains("@VP->_V"));
 		}
 
 		public Tree<String> getBestParse(List<String> sentence) {
-			
-			Tree<String> bestTree;
-			double best_p = 0;
-			List<String> preTerminals = getPreTerminals(sentence);
-			//TODO after getting the pre-terminals, we need to construct several parse trees. 
-			//can use get rules functions in Grammar class, and also calculate the probability of each tree
-			System.out.println(preTerminals.toString());
-			
-			return null;
+			return CKY(sentence);
 		}
 		
-		private List<String> getPreTerminals(List<String> sentence) {
-			List<String> tags = new ArrayList<String>();
-			for (String word : sentence) {
-				String tag = getBestTag(word);
-				tags.add(tag);
+		private void convertSet2IHm(Set<String> s)
+		{
+			ihmStrKey = new IdentityHashMap<String, Integer>();
+			ihmIntKey = new IdentityHashMap<Integer, String>();
+			int i= 0;
+			for(String tag : s)
+			{
+				if(tag.equals("@VP->_V"))
+				{
+					System.out.println("ahha " + ihmStrKey.size());
+				
+				}
+				ihmStrKey.put(tag, i);
+				if(tag.equals("@VP->_V"))
+				{
+					System.out.println("ahha" + ihmStrKey.containsKey("@VP->_V") + " "+ ihmStrKey.size());
+					System.out.println(ihmStrKey.keySet().toString());
+				}
+				ihmIntKey.put(i, tag);
+				i++;
 			}
-			return tags;
 		}
-
-		private String getBestTag(String word) {
-			double bestScore = Double.NEGATIVE_INFINITY;
-			String bestTag = null;
-			for (String tag : lexicon.getAllTags()) {
-				double score = lexicon.scoreTagging(word, tag);
-				if (bestTag == null || score > bestScore) {
-					bestScore = score;
-					bestTag = tag;
+		
+		private Tree<String> CKY(List<String> sentence)
+		{
+			int num_words = sentence.size();
+			int num_nonterms = ihmStrKey.keySet().size();
+			double[][][] score = new double[num_words+1][num_words+1][num_nonterms];
+			BackElement[][][] back = new BackElement[num_words+1][num_words+1][num_nonterms];
+			String word;
+			for(int i = 0; i < num_words; i++)
+			{
+				word = sentence.get(i);
+				for(String A : ihmStrKey.keySet())
+				{
+					int a = ihmStrKey.get(A);
+					System.out.println("i "+ num_nonterms+ " a "+a);
+					score[i][i+1][a] = lexicon.scoreTagging(word, A);
+					
+				}
+				
+				boolean added = true;
+				while(added)
+				{
+					added = false;
+					List<UnaryRule> uRules;
+					for(String B : ihmStrKey.keySet())
+					{
+						int b = ihmStrKey.get(B);	
+						if(score[i][i+1][b] > 0)
+						{
+							uRules = grammar.getUnaryRulesByChild(B);
+							for(UnaryRule r : uRules)
+							{
+								String A = r.getParent();
+								double prob = r.getScore()*score[i][i+1][b];
+								int a = ihmStrKey.get(A);
+								if(prob > score[i][i+1][a])
+								{
+									score[i][i+1][a] = prob;
+									back[i][i+1][a] = new BackElement(a,b);
+									added = true;
+								}
+							}
+						}
+					}
 				}
 			}
-			return bestTag;
+			
+			for(int span = 2; span <= num_words; span++)
+			{
+				for(int begin = 0; begin <= num_words-span; begin++)
+				{
+					int end = begin + span;
+					for(int split = begin + 1; split < end - 1; split ++)
+					{
+						List<BinaryRule> bRules;
+						for(String B : ihmStrKey.keySet())
+						{
+							bRules = grammar.getBinaryRulesByLeftChild(B);
+							int b = ihmStrKey.get(B);
+							for(BinaryRule r : bRules)
+							{
+								String A = r.getParent();
+								String C = r.getRightChild();
+								System.out.println("rule "+ r.toString());
+								int a = ihmStrKey.get(A);
+								int c = ihmStrKey.get(C);
+								double prob = score[begin][split][b]*score[split][end][c]*r.getScore();
+								if(prob > score[begin][end][a]);
+								{
+									score[begin][end][a] = prob; 
+									back[begin][end][a] = new BackElement(a, b, c, split);
+								}
+							}
+						}
+					}
+					boolean added = true;
+					while(added)
+					{
+						added = false;
+						List<UnaryRule> uRules;
+						for(String B : ihmStrKey.keySet())
+						{
+							uRules = grammar.getUnaryRulesByChild(B);
+							int b = ihmStrKey.get(B);
+							for(UnaryRule r : uRules)
+							{
+								String A = r.getParent();
+								int a = ihmStrKey.get(A);
+								double prob = r.getScore()*score[begin][end][b];
+								if(prob > score[begin][end][a])
+								{
+									score[begin][end][a] = prob;
+									back[begin][end][a] = new BackElement(a,b);
+									added = true;
+								}
+							}
+						}
+					}
+				}
+			}
+			//find the highest prob for the root
+			int index = 0;
+			double bestProb = 0;
+			for(int i = 0; i < num_nonterms; i++)
+			{
+				double s = score[0][num_words][i];
+				if(s > bestProb)
+				{
+					bestProb = s;
+					index = i;
+				}
+			}
+			return BuildTree(0, num_words, back, index, sentence);
 		}
-
+		
+		private Tree<String> BuildTree(int lIndex, int rIndex, BackElement[][][] back, int bestIndex, List<String> sentence)
+		{
+			BackElement e = back[lIndex][rIndex][bestIndex];
+			if(lIndex == rIndex - 1 && e == null)
+				return new Tree<String>(sentence.get(lIndex));
+			
+			int parent = e.parent;
+			String parentLabel = ihmIntKey.get(parent);
+			int child1 = e.child1;
+			int child2 = 0;
+			if(e.split != -1)
+				child2 = e.child2;
+				
+			Tree<String> tree = new Tree<String>(parentLabel);
+			List<Tree<String>> children = new ArrayList<Tree<String>>();
+			
+			if(e.split == -1)
+			{
+				children.add(BuildTree(lIndex, rIndex, back, child1, sentence));
+			}
+			else
+			{
+				children.add(BuildTree(lIndex, e.split, back, child1, sentence));
+				children.add(BuildTree(e.split, rIndex, back, child2, sentence));
+			}
+			tree.setChildren(children);
+			return tree;
+		}
 	}
+	
 
 	// BaselineParser =============================================================
 
@@ -362,6 +528,7 @@ public class PCFGParserTester {
 				new HashMap<String, List<BinaryRule>>();
 		Map<String, List<UnaryRule>> unaryRulesByChild = 
 				new HashMap<String, List<UnaryRule>>();
+		Set<String> tags = new HashSet<String>();
 
 		/* Rules in grammar are indexed by child for easy access when
 		 * doing bottom up parsing. */
@@ -440,15 +607,21 @@ public class PCFGParserTester {
 				Counter<BinaryRule> binaryRuleCounter) {
 			if (tree.isLeaf()) return;
 			if (tree.isPreTerminal()) return;
+			
 			if (tree.getChildren().size() == 1) {
 				UnaryRule unaryRule = makeUnaryRule(tree);
 				symbolCounter.incrementCount(tree.getLabel(), 1.0);
 				unaryRuleCounter.incrementCount(unaryRule, 1.0);
+				tags.add(tree.getLabel());
+				tags.add(tree.getChildren().get(0).getLabel());
 			}
 			if (tree.getChildren().size() == 2) {
 				BinaryRule binaryRule = makeBinaryRule(tree);
 				symbolCounter.incrementCount(tree.getLabel(), 1.0);
 				binaryRuleCounter.incrementCount(binaryRule, 1.0);
+				tags.add(tree.getLabel());
+				tags.add(tree.getChildren().get(0).getLabel());
+				tags.add(tree.getChildren().get(1).getLabel());
 			}
 			if (tree.getChildren().size() < 1 || tree.getChildren().size() > 2) {
 				throw new RuntimeException("Attempted to construct a Grammar with an illegal tree: "+tree +" "+tree.getChildren().size());
