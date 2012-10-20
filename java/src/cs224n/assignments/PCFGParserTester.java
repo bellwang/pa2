@@ -82,7 +82,6 @@ public class PCFGParserTester {
 			tags.addAll(lexicon.getAllTags());
 			tags.addAll(grammar.tags);
 			convertSet2IHm(tags);
-			System.out.println("contain " + tags.contains("@VP->_V"));
 		}
 
 		public Tree<String> getBestParse(List<String> sentence) {
@@ -96,17 +95,7 @@ public class PCFGParserTester {
 			int i= 0;
 			for(String tag : s)
 			{
-				if(tag.equals("@VP->_V"))
-				{
-					System.out.println("ahha " + hmStrKey.size());
-				
-				}
 				hmStrKey.put(tag, i);
-				if(tag.equals("@VP->_V"))
-				{
-					System.out.println("ahha" + hmStrKey.containsKey("@VP->_V") + " "+ hmStrKey.size());
-					System.out.println(hmStrKey.keySet().toString());
-				}
 				hmIntKey.put(i, tag);
 				i++;
 			}
@@ -125,9 +114,7 @@ public class PCFGParserTester {
 				for(String A : hmStrKey.keySet())
 				{
 					int a = hmStrKey.get(A);
-					System.out.println("i "+ num_nonterms+ " a "+a);
 					score[i][i+1][a] = lexicon.scoreTagging(word, A);
-					
 				}
 				
 				boolean added = true;
@@ -174,26 +161,16 @@ public class PCFGParserTester {
 							{
 								String A = r.getParent();
 								String C = r.getRightChild();
-								System.out.println("rule "+ r.toString());
 								int a = hmStrKey.get(A);
 								int c = hmStrKey.get(C);
 								double prob = score[begin][split][b]*score[split][end][c]*r.getScore();
-
-								System.out.println("score[" + begin + "][" + end + "][" + a + "] = " + score[begin][end][a]);
-
 								
 								double temp_val = score[begin][end][a];
 								if(new Double(prob).doubleValue() > new Double(temp_val).doubleValue())
 								{
-									System.out.println("prob:" + prob  + "> score[begin][end][a]:" + score[begin][end][a]);
 									score[begin][end][a] = prob; 
 									back[begin][end][a] = new BackElement(a, b, c, split);
 								}
-								
-								System.out.println("score[" + begin + "][" + end + "][" + a + "] = " + score[begin][end][a]);
-								
-								for(int i=0; i<num_nonterms; i++) System.out.print(score[0][3][i] + " ");
-								System.out.println("");
 							}
 						}
 					}
