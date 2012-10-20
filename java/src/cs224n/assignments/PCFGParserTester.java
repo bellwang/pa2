@@ -206,19 +206,26 @@ public class PCFGParserTester {
 		
 		private Tree<String> BuildTree(int lIndex, int rIndex, BackElement[][][] back, int bestIndex, List<String> sentence)
 		{
+			String parentLabel = hmIntKey.get(bestIndex);
+			Tree<String> tree = new Tree<String>(parentLabel);
+			List<Tree<String>> children = new ArrayList<Tree<String>>();
 			BackElement e = back[lIndex][rIndex][bestIndex];
 			if(lIndex == rIndex - 1 && e == null)
-				return new Tree<String>(sentence.get(lIndex));
+			{
+				Tree<String> child = new Tree<String>(sentence.get(lIndex));
+				children.add(child);
+				tree.setChildren(children);
+				return tree;
+			}
 			
-			int parent = e.parent;
-			String parentLabel = hmIntKey.get(parent);
+			
+			
 			int child1 = e.child1;
 			int child2 = 0;
 			if(e.split != -1)
 				child2 = e.child2;
 				
-			Tree<String> tree = new Tree<String>(parentLabel);
-			List<Tree<String>> children = new ArrayList<Tree<String>>();
+			
 			
 			if(e.split == -1)
 			{
@@ -793,7 +800,8 @@ public class PCFGParserTester {
 		// set up default options ..............................................
 		Map<String, String> options = new HashMap<String, String>();
 		options.put("-path",      "/afs/ir/class/cs224n/pa2/data/");
-		options.put("-data",      "miniTest");
+//		options.put("-data",      "miniTest");
+		options.put("-data",      "treebank");
 		//options.put("-parser",    "cs224n.assignments.PCFGParserTester$BaselineParser");
 		options.put("-parser",    "cs224n.assignments.PCFGParserTester$PCFGParser");
 		options.put("-maxLength", "20");
