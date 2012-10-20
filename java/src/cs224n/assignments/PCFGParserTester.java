@@ -382,16 +382,26 @@ public class PCFGParserTester {
 	 */
 	public static class TreeAnnotations {
 
+		private static void Markov(Tree<String> Input_Tree,String Parent, String GrandParent){
+			String cur_label = Input_Tree.getLabel();
+			Input_Tree.setLabel(cur_label + (Parent==null?"":"-"+Parent) + (GrandParent==null?"":"-"+GrandParent));
+			
+			for( Tree<String> Child: Input_Tree.getChildren()){
+				Markov(Child, cur_label, Parent);
+			}			
+		}
+		
 		public static Tree<String> annotateTree(Tree<String> unAnnotatedTree) {
 
 			// Currently, the only annotation done is a lossless binarization
 
 			// TODO: change the annotation from a lossless binarization to a
 			// finite-order markov process (try at least 1st and 2nd order)
-
+			Markov(unAnnotatedTree, null, null);
+			
+			
 			// TODO : mark nodes with the label of their parent nodes, giving a second
 			// order vertical markov process
-
 			return binarizeTree(unAnnotatedTree);
 
 		}
@@ -812,7 +822,7 @@ public class PCFGParserTester {
 		// set up default options ..............................................
 		Map<String, String> options = new HashMap<String, String>();
 		options.put("-path",      "/afs/ir/class/cs224n/pa2/data/");
-//		options.put("-data",      "miniTest");
+		//options.put("-data",      "miniTest");
 		options.put("-data",      "treebank");
 		//options.put("-parser",    "cs224n.assignments.PCFGParserTester$BaselineParser");
 		options.put("-parser",    "cs224n.assignments.PCFGParserTester$PCFGParser");
