@@ -384,6 +384,8 @@ public class PCFGParserTester {
 
 		private static void Markov(Tree<String> Input_Tree,String Parent, String GrandParent){
 			String cur_label = Input_Tree.getLabel();
+			if(Input_Tree.isLeaf()) return;
+			
 			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent) + (GrandParent==null?"":"^"+GrandParent));
 			
 			for( Tree<String> Child: Input_Tree.getChildren()){
@@ -822,8 +824,8 @@ public class PCFGParserTester {
 		// set up default options ..............................................
 		Map<String, String> options = new HashMap<String, String>();
 		options.put("-path",      "/afs/ir/class/cs224n/pa2/data/");
-		options.put("-data",      "miniTest");
-		//options.put("-data",      "treebank");
+		//options.put("-data",      "miniTest");
+		options.put("-data",      "treebank");
 		//options.put("-parser",    "cs224n.assignments.PCFGParserTester$BaselineParser");
 		options.put("-parser",    "cs224n.assignments.PCFGParserTester$PCFGParser");
 		options.put("-maxLength", "20");
