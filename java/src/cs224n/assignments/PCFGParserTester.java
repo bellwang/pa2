@@ -124,14 +124,15 @@ public class PCFGParserTester {
 					List<UnaryRule> uRules;
 					for(String B : hmStrKey.keySet())
 					{
-						int b = hmStrKey.get(B);	
-						if(score[i][i+1][b] > 0)
+						int b = hmStrKey.get(B);
+						double tempScore = score[i][i+1][b];
+						if(tempScore > 0)
 						{
 							uRules = grammar.getUnaryRulesByChild(B);
 							for(UnaryRule r : uRules)
 							{
 								String A = r.getParent();
-								double prob = r.getScore()*score[i][i+1][b];
+								double prob = r.getScore()*tempScore;
 								int a = hmStrKey.get(A);
 								if(prob > score[i][i+1][a])
 								{
@@ -155,15 +156,22 @@ public class PCFGParserTester {
 						List<BinaryRule> bRules;
 						for(String B : hmStrKey.keySet())
 						{
-							bRules = grammar.getBinaryRulesByLeftChild(B);
 							int b = hmStrKey.get(B);
+							double tempScoreB = score[begin][split][b];
+							if(tempScoreB == 0)
+								continue;
+							bRules = grammar.getBinaryRulesByLeftChild(B);
 							for(BinaryRule r : bRules)
 							{
 								String A = r.getParent();
 								String C = r.getRightChild();
 								int a = hmStrKey.get(A);
 								int c = hmStrKey.get(C);
-								double prob = score[begin][split][b]*score[split][end][c]*r.getScore();
+								
+								double tempScoreC = score[split][end][c];
+								if(tempScoreC == 0)
+									continue;
+								double prob = tempScoreB*tempScoreC*r.getScore();
 								
 								double temp_val = score[begin][end][a];
 								if(new Double(prob).doubleValue() > new Double(temp_val).doubleValue())
@@ -181,14 +189,16 @@ public class PCFGParserTester {
 						List<UnaryRule> uRules;
 						for(String B : hmStrKey.keySet())
 						{
-							uRules = grammar.getUnaryRulesByChild(B);
 							int b = hmStrKey.get(B);
+							double tempScore = score[begin][end][b];
+							if(tempScore == 0)
+								continue;
+							uRules = grammar.getUnaryRulesByChild(B);
 							for(UnaryRule r : uRules)
 							{
 								String A = r.getParent();
 								int a = hmStrKey.get(A);
-								double prob = r.getScore()*score[begin][end][b];
-								
+								double prob = r.getScore()*tempScore;
 								double temp_val = score[begin][end][a];
 								if(new Double(prob).doubleValue() > new Double(temp_val).doubleValue())
 								{
