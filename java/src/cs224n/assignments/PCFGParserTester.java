@@ -83,7 +83,9 @@ public class PCFGParserTester {
 
 		@Override
 		public Tree<String> getBestParse(List<String> sentence) {
-			return CKY(sentence);
+			Tree<String> tree = CKY(sentence);
+			tree = TreeAnnotations.unAnnotateTree(tree);
+			return tree;
 		}
 		
 		private void convertSet2IHm(Set<String> s)
