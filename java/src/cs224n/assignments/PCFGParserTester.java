@@ -146,7 +146,7 @@ public class PCFGParserTester {
 								String A = r.getParent();
 								double prob = r.getScore()*score[i][i+1][b];
 								int a = hmStrKey.get(A);
-								if(prob+1 > score[i][i+1][a]+1)
+								if(prob > score[i][i+1][a])
 								{
 									score[i][i+1][a] = prob;
 									back[i][i+1][a] = new BackElement(a,b);
@@ -181,9 +181,10 @@ public class PCFGParserTester {
 
 								System.out.println("score[" + begin + "][" + end + "][" + a + "] = " + score[begin][end][a]);
 
-								if((prob+1) > (score[begin][end][a]+1) );
+								
+								double temp_val = score[begin][end][a];
+								if(new Double(prob).doubleValue() > new Double(temp_val).doubleValue())
 								{
-									
 									System.out.println("prob:" + prob  + "> score[begin][end][a]:" + score[begin][end][a]);
 									score[begin][end][a] = prob; 
 									back[begin][end][a] = new BackElement(a, b, c, split);
@@ -210,7 +211,9 @@ public class PCFGParserTester {
 								String A = r.getParent();
 								int a = hmStrKey.get(A);
 								double prob = r.getScore()*score[begin][end][b];
-								if(prob+1 > score[begin][end][a]+1)
+								
+								double temp_val = score[begin][end][a];
+								if(new Double(prob).doubleValue() > new Double(temp_val).doubleValue())
 								{
 									score[begin][end][a] = prob;
 									back[begin][end][a] = new BackElement(a,b);
@@ -227,7 +230,9 @@ public class PCFGParserTester {
 			for(int i = 0; i < num_nonterms; i++)
 			{
 				double s = score[0][num_words][i];
-				if(s+1 > bestProb+1)
+
+				double temp_val = bestProb;
+				if(new Double(s).doubleValue() > new Double(temp_val).doubleValue())				
 				{
 					bestProb = s;
 					index = i;
