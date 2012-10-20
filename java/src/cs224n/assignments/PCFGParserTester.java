@@ -6,11 +6,7 @@ import cs224n.ling.Trees;
 import cs224n.parser.EnglishPennTreebankParseEvaluator;
 import cs224n.util.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Harness for PCFG Parser project.
@@ -64,6 +60,7 @@ public class PCFGParserTester {
 			}
 		}
 
+		@Override
 		public void train(List<Tree<String>> trainTrees) {
 			// TODO: before you generate your grammar, the training trees
 			// need to be binarized so that rules are at most binary
@@ -84,6 +81,7 @@ public class PCFGParserTester {
 			convertSet2IHm(tags);
 		}
 
+		@Override
 		public Tree<String> getBestParse(List<String> sentence) {
 			return CKY(sentence);
 		}
@@ -202,19 +200,7 @@ public class PCFGParserTester {
 				}
 			}
 			//find the highest prob for the root
-			int index = 0;
-			double bestProb = 0;
-			for(int i = 0; i < num_nonterms; i++)
-			{
-				double s = score[0][num_words][i];
-
-				double temp_val = bestProb;
-				if(new Double(s).doubleValue() > new Double(temp_val).doubleValue())				
-				{
-					bestProb = s;
-					index = i;
-				}
-			}
+			int index = hmStrKey.get("ROOT");
 			return BuildTree(0, num_words, back, index, sentence);
 		}
 		
@@ -263,6 +249,7 @@ public class PCFGParserTester {
 		CounterMap<Integer,String> spanToCategories;
 		Lexicon lexicon;
 
+		@Override
 		public void train(List<Tree<String>> trainTrees) {
 			lexicon = new Lexicon(trainTrees);
 			knownParses = new CounterMap<List<String>, Tree<String>>();
@@ -274,6 +261,7 @@ public class PCFGParserTester {
 			}
 		}
 
+		@Override
 		public Tree<String> getBestParse(List<String> sentence) {
 			List<String> tags = getBaselineTagging(sentence);
 			if (knownParses.keySet().contains(tags)) {
@@ -431,6 +419,7 @@ public class PCFGParserTester {
 
 			Tree<String> debinarizedTree =
 					Trees.spliceNodes(annotatedTree, new Filter<String>() {
+						@Override
 						public boolean accept(String s) {
 							return s.startsWith("@");
 						}
@@ -536,6 +525,7 @@ public class PCFGParserTester {
 			return CollectionUtils.getValueList(unaryRulesByChild, child);
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			List<String> ruleStrings = new ArrayList<String>();
@@ -664,6 +654,7 @@ public class PCFGParserTester {
 			this.score = score;
 		}
 
+		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (!(o instanceof BinaryRule)) return false;
@@ -680,6 +671,7 @@ public class PCFGParserTester {
 			return true;
 		}
 
+		@Override
 		public int hashCode() {
 			int result;
 			result = (parent != null ? parent.hashCode() : 0);
@@ -688,6 +680,7 @@ public class PCFGParserTester {
 			return result;
 		}
 
+		@Override
 		public String toString() {
 			return parent + " -> " + leftChild + " " + rightChild + " %% "+score;
 		}
@@ -725,6 +718,7 @@ public class PCFGParserTester {
 			this.score = score;
 		}
 
+		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (!(o instanceof UnaryRule)) return false;
@@ -737,6 +731,7 @@ public class PCFGParserTester {
 			return true;
 		}
 
+		@Override
 		public int hashCode() {
 			int result;
 			result = (parent != null ? parent.hashCode() : 0);
@@ -744,6 +739,7 @@ public class PCFGParserTester {
 			return result;
 		}
 
+		@Override
 		public String toString() {
 			return parent + " -> " + child + " %% "+score;
 		}
