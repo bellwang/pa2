@@ -382,14 +382,37 @@ public class PCFGParserTester {
 	 */
 	public static class TreeAnnotations {
 
-		private static void Markov(Tree<String> Input_Tree,String Parent, String GrandParent){
+		private static void Markov1(Tree<String> Input_Tree,String Parent){
+			String cur_label = Input_Tree.getLabel();
+			if(Input_Tree.isLeaf()) return;
+			
+			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent));
+			
+			for( Tree<String> Child: Input_Tree.getChildren()){
+				Markov1(Child, cur_label);
+			}			
+		}
+		
+		private static void Markov2(Tree<String> Input_Tree,String Parent, String GrandParent){
 			String cur_label = Input_Tree.getLabel();
 			if(Input_Tree.isLeaf()) return;
 			
 			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent) + (GrandParent==null?"":"^"+GrandParent));
 			
 			for( Tree<String> Child: Input_Tree.getChildren()){
-				Markov(Child, cur_label, Parent);
+				Markov2(Child, cur_label, Parent);
+			}			
+		}
+		
+		private static void Markov3(Tree<String> Input_Tree,String Parent, String GrandParent, String GranGrandParent){
+			String cur_label = Input_Tree.getLabel();
+			if(Input_Tree.isLeaf()) return;
+			
+			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent) + (GrandParent==null?"":"^"+GrandParent)
+					+ (GranGrandParent==null?"":"^"+GranGrandParent));
+			
+			for( Tree<String> Child: Input_Tree.getChildren()){
+				Markov3(Child, cur_label, Parent, GrandParent);
 			}			
 		}
 		
@@ -399,7 +422,7 @@ public class PCFGParserTester {
 
 			// TODO: change the annotation from a lossless binarization to a
 			// finite-order markov process (try at least 1st and 2nd order)
-			Markov(unAnnotatedTree, null, null);
+			Markov2(unAnnotatedTree, null, null);
 			
 			
 			// TODO : mark nodes with the label of their parent nodes, giving a second
@@ -824,7 +847,7 @@ public class PCFGParserTester {
 		// set up default options ..............................................
 		Map<String, String> options = new HashMap<String, String>();
 		options.put("-path",      "/afs/ir/class/cs224n/pa2/data/");
-		//options.put("-data",      "miniTest");
+//		options.put("-data",      "miniTest");
 		options.put("-data",      "treebank");
 		//options.put("-parser",    "cs224n.assignments.PCFGParserTester$BaselineParser");
 		options.put("-parser",    "cs224n.assignments.PCFGParserTester$PCFGParser");
