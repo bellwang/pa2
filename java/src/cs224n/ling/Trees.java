@@ -23,6 +23,13 @@ public class Trees {
 	public static class FunctionNodeStripper implements TreeTransformer<String> {
 		public Tree<String> transformTree(Tree<String> tree) {
 			String transformedLabel = tree.getLabel();
+			
+			//TODO: handle the Hypen Case for unannonation
+			int indexOfHypen = transformedLabel.indexOf("^");
+			if(indexOfHypen > 0 && !tree.isLeaf())
+				transformedLabel = new String(transformedLabel.substring(0,indexOfHypen));
+			//End of TODO
+			
 			int cutIndex = transformedLabel.indexOf('-');
 			int cutIndex2 = transformedLabel.indexOf('=');
 			if (cutIndex2 > 0 && (cutIndex2 < cutIndex || cutIndex == -1))
