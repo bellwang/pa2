@@ -40,8 +40,8 @@ public class PCFGParserTester {
 
 		private Grammar grammar;
 		private Lexicon lexicon;
-		private IdentityHashMap<String, Integer> ihmStrKey;
-		private IdentityHashMap<Integer, String> ihmIntKey;
+		private HashMap<String, Integer> hmStrKey;
+		private HashMap<Integer, String> hmIntKey;
 		
 		
 		class BackElement
@@ -91,23 +91,23 @@ public class PCFGParserTester {
 		
 		private void convertSet2IHm(Set<String> s)
 		{
-			ihmStrKey = new IdentityHashMap<String, Integer>();
-			ihmIntKey = new IdentityHashMap<Integer, String>();
+			hmStrKey = new HashMap<String, Integer>();
+			hmIntKey = new HashMap<Integer, String>();
 			int i= 0;
 			for(String tag : s)
 			{
 				if(tag.equals("@VP->_V"))
 				{
-					System.out.println("ahha " + ihmStrKey.size());
+					System.out.println("ahha " + hmStrKey.size());
 				
 				}
-				ihmStrKey.put(tag, i);
+				hmStrKey.put(tag, i);
 				if(tag.equals("@VP->_V"))
 				{
-					System.out.println("ahha" + ihmStrKey.containsKey("@VP->_V") + " "+ ihmStrKey.size());
-					System.out.println(ihmStrKey.keySet().toString());
+					System.out.println("ahha" + hmStrKey.containsKey("@VP->_V") + " "+ hmStrKey.size());
+					System.out.println(hmStrKey.keySet().toString());
 				}
-				ihmIntKey.put(i, tag);
+				hmIntKey.put(i, tag);
 				i++;
 			}
 		}
@@ -115,16 +115,16 @@ public class PCFGParserTester {
 		private Tree<String> CKY(List<String> sentence)
 		{
 			int num_words = sentence.size();
-			int num_nonterms = ihmStrKey.keySet().size();
+			int num_nonterms = hmStrKey.keySet().size();
 			double[][][] score = new double[num_words+1][num_words+1][num_nonterms];
 			BackElement[][][] back = new BackElement[num_words+1][num_words+1][num_nonterms];
 			String word;
 			for(int i = 0; i < num_words; i++)
 			{
 				word = sentence.get(i);
-				for(String A : ihmStrKey.keySet())
+				for(String A : hmStrKey.keySet())
 				{
-					int a = ihmStrKey.get(A);
+					int a = hmStrKey.get(A);
 					System.out.println("i "+ num_nonterms+ " a "+a);
 					score[i][i+1][a] = lexicon.scoreTagging(word, A);
 					
@@ -135,9 +135,9 @@ public class PCFGParserTester {
 				{
 					added = false;
 					List<UnaryRule> uRules;
-					for(String B : ihmStrKey.keySet())
+					for(String B : hmStrKey.keySet())
 					{
-						int b = ihmStrKey.get(B);	
+						int b = hmStrKey.get(B);	
 						if(score[i][i+1][b] > 0)
 						{
 							uRules = grammar.getUnaryRulesByChild(B);
@@ -145,8 +145,8 @@ public class PCFGParserTester {
 							{
 								String A = r.getParent();
 								double prob = r.getScore()*score[i][i+1][b];
-								int a = ihmStrKey.get(A);
-								if(prob > score[i][i+1][a])
+								int a = hmStrKey.get(A);
+								if(prob+1 > score[i][i+1][a]+1)
 								{
 									score[i][i+1][a] = prob;
 									back[i][i+1][a] = new BackElement(a,b);
@@ -163,26 +163,36 @@ public class PCFGParserTester {
 				for(int begin = 0; begin <= num_words-span; begin++)
 				{
 					int end = begin + span;
-					for(int split = begin + 1; split < end - 1; split ++)
+					for(int split = begin + 1; split <= end - 1; split ++)
 					{
 						List<BinaryRule> bRules;
-						for(String B : ihmStrKey.keySet())
+						for(String B : hmStrKey.keySet())
 						{
 							bRules = grammar.getBinaryRulesByLeftChild(B);
-							int b = ihmStrKey.get(B);
+							int b = hmStrKey.get(B);
 							for(BinaryRule r : bRules)
 							{
 								String A = r.getParent();
 								String C = r.getRightChild();
 								System.out.println("rule "+ r.toString());
-								int a = ihmStrKey.get(A);
-								int c = ihmStrKey.get(C);
+								int a = hmStrKey.get(A);
+								int c = hmStrKey.get(C);
 								double prob = score[begin][split][b]*score[split][end][c]*r.getScore();
-								if(prob > score[begin][end][a]);
+
+								System.out.println("score[" + begin + "][" + end + "][" + a + "] = " + score[begin][end][a]);
+
+								if((prob+1) > (score[begin][end][a]+1) );
 								{
+									
+									System.out.println("prob:" + prob  + "> score[begin][end][a]:" + score[begin][end][a]);
 									score[begin][end][a] = prob; 
 									back[begin][end][a] = new BackElement(a, b, c, split);
 								}
+								
+								System.out.println("score[" + begin + "][" + end + "][" + a + "] = " + score[begin][end][a]);
+								
+								for(int i=0; i<num_nonterms; i++) System.out.print(score[0][3][i] + " ");
+								System.out.println("");
 							}
 						}
 					}
@@ -191,16 +201,16 @@ public class PCFGParserTester {
 					{
 						added = false;
 						List<UnaryRule> uRules;
-						for(String B : ihmStrKey.keySet())
+						for(String B : hmStrKey.keySet())
 						{
 							uRules = grammar.getUnaryRulesByChild(B);
-							int b = ihmStrKey.get(B);
+							int b = hmStrKey.get(B);
 							for(UnaryRule r : uRules)
 							{
 								String A = r.getParent();
-								int a = ihmStrKey.get(A);
+								int a = hmStrKey.get(A);
 								double prob = r.getScore()*score[begin][end][b];
-								if(prob > score[begin][end][a])
+								if(prob+1 > score[begin][end][a]+1)
 								{
 									score[begin][end][a] = prob;
 									back[begin][end][a] = new BackElement(a,b);
@@ -217,7 +227,7 @@ public class PCFGParserTester {
 			for(int i = 0; i < num_nonterms; i++)
 			{
 				double s = score[0][num_words][i];
-				if(s > bestProb)
+				if(s+1 > bestProb+1)
 				{
 					bestProb = s;
 					index = i;
@@ -233,7 +243,7 @@ public class PCFGParserTester {
 				return new Tree<String>(sentence.get(lIndex));
 			
 			int parent = e.parent;
-			String parentLabel = ihmIntKey.get(parent);
+			String parentLabel = hmIntKey.get(parent);
 			int child1 = e.child1;
 			int child2 = 0;
 			if(e.split != -1)
@@ -484,7 +494,7 @@ public class PCFGParserTester {
 			}
 			double p_word = (1.0 + c_word) / (totalTokens + totalWordTypes);
 			double p_tag_given_word = c_tag_and_word / c_word;
-			return p_tag_given_word / p_tag * p_word;
+			return ( p_tag == 0 || p_word == 0)?0:(p_tag_given_word / p_tag * p_word);
 		}
 
 		/* Builds a lexicon from the observed tags in a list of training trees. */
