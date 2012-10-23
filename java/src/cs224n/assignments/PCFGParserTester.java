@@ -216,7 +216,7 @@ public class PCFGParserTester {
 			Tree<String> tree = new Tree<String>(parentLabel);
 			List<Tree<String>> children = new ArrayList<Tree<String>>();
 			BackElement e = back[lIndex][rIndex][bestIndex];
-			if(lIndex == rIndex - 1 && e == null)
+			if(e == null)
 			{
 				Tree<String> child = new Tree<String>(sentence.get(lIndex));
 				children.add(child);
@@ -411,45 +411,51 @@ public class PCFGParserTester {
 		}
 		
 		
-		private static void HorizonOnly_Markov(Tree<String> Input_Tree, Tree<String> Parent){
-			String cur_label = Input_Tree.getLabel();
+		private static void HorizonOnly_Markov(Tree<String> Input_Tree, ArrayList<String> siblingTags)
+		{
 			if(Input_Tree.isLeaf()) return;
-			
+			String cur_label = Input_Tree.getLabel();
 			//horizontal
-			if(Parent != null){
-				for( Tree<String> Sibling: Parent.getChildren()){
-					if(Sibling == null) continue;
-					if(Sibling.isLeaf()) continue;
-					cur_label+="_" + Sibling.getLabel();		
+			if(siblingTags!=null)
+			{
+				for(String siblingTag : siblingTags){
+					cur_label+="_" + siblingTag;		
 				}
-				Input_Tree.setLabel(cur_label);		
 			}
-			
-						
+			Input_Tree.setLabel(cur_label);	
+			ArrayList<String> tags = new ArrayList<String>();
 			for( Tree<String> Child: Input_Tree.getChildren()){
-				HorizonOnly_Markov(Child, Input_Tree);
+				if(!Child.isLeaf())
+					tags.add(Child.getLabel());
+			}			
+			for( Tree<String> Child: Input_Tree.getChildren()){
+				HorizonOnly_Markov(Child, tags);
 			}			
 		}
 		
-		private static void Horizon_Markov2V(Tree<String> Input_Tree, Tree<String> Parent,String parentTag, String GrandparentTag){
+		private static void Horizon_Markov2V(Tree<String> Input_Tree, ArrayList<String> siblingTags, String parentTag, String GrandparentTag){
+			if(Input_Tree.isLeaf()) return;
 			String cur_label = Input_Tree.getLabel();
 			String backup = cur_label;
-			if(Input_Tree.isLeaf()) return;
 			
 			//horizontal
-			if(Parent != null){
-				for( Tree<String> Sibling: Parent.getChildren()){
-					if(Sibling == null) continue;
-					if(Sibling.isLeaf()) continue;
-					cur_label+= "_" + Sibling.getLabel();
-				}				
+			if(siblingTags!=null)
+			{
+				for(String siblingTag : siblingTags){
+					cur_label+="_" + siblingTag;		
+				}	
 			}
 			
 			//2nd order vertical
 			Input_Tree.setLabel(cur_label + (parentTag==null?"":"^"+parentTag) + (GrandparentTag==null?"":"^"+GrandparentTag));
 			
+			ArrayList<String> tags = new ArrayList<String>();
 			for( Tree<String> Child: Input_Tree.getChildren()){
-				Horizon_Markov2V(Child, Input_Tree, backup, parentTag);
+				if(!Child.isLeaf())
+					tags.add(Child.getLabel());
+			}
+			for( Tree<String> Child: Input_Tree.getChildren()){
+				Horizon_Markov2V(Child, tags, backup, parentTag);
 			}			
 		}
 		
