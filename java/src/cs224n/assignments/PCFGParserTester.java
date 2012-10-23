@@ -446,7 +446,7 @@ public class PCFGParserTester {
 			}
 			
 			//2nd order vertical
-			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent.getLabel()) + (GrandparentTag==null?"":"^"+GrandparentTag));
+			Input_Tree.setLabel(cur_label + (parentTag==null?"":"^"+parentTag) + (GrandparentTag==null?"":"^"+GrandparentTag));
 			
 			for( Tree<String> Child: Input_Tree.getChildren()){
 				Horizon_Markov2V(Child, Input_Tree, backup, parentTag);
