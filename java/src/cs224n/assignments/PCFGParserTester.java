@@ -416,19 +416,23 @@ public class PCFGParserTester {
 			}			
 		}
 		
-
-		private static void HorizonOnly_Markov(Tree<String> Input_Tree) {
-			String append_str = "";
-			for( Tree<String> Child: Input_Tree.getChildren()){
-				if(Child.isLeaf()) return;
-				
-				append_str = "_" + Child.getLabel();
-			}
+		
+		private static void HorizonOnly_Markov(Tree<String> Input_Tree, Tree<String> Parent){
+			String cur_label = Input_Tree.getLabel();
+			if(Input_Tree.isLeaf()) return;
 			
-			for( Tree<String> Child: Input_Tree.getChildren()){ 
-				Child.setLabel(Child.getLabel() + append_str);
-				HorizonOnly_Markov(Child);
-			}				
+			//horizontal
+			if(Parent != null){
+				for( Tree<String> Sibling: Parent.getChildren()){
+					if(Sibling == null) continue;
+					if(Sibling.isLeaf()) continue;
+					Input_Tree.setLabel(cur_label + "_" + Sibling.getLabel() );				
+				}				
+			}
+						
+			for( Tree<String> Child: Input_Tree.getChildren()){
+				HorizonOnly_Markov(Child, Input_Tree);
+			}			
 		}
 		
 		private static void Horizon_Markov2V(Tree<String> Input_Tree, Tree<String> Parent, Tree<String> GrandParent){
@@ -458,9 +462,10 @@ public class PCFGParserTester {
 
 			// TODO: change the annotation from a lossless binarization to a
 			// finite-order markov process (try at least 1st and 2nd order)
-			//HorizonOnly_Markov(unAnnotatedTree);
-			//Markov2(unAnnotatedTree, null, null);
 			
+			//HorizonOnly_Markov(unAnnotatedTree, null);
+			//Markov2(unAnnotatedTree, null, null);
+			Horizon_Markov2V(unAnnotatedTree, null, null);
 			
 			// TODO : mark nodes with the label of their parent nodes, giving a second
 			// order vertical markov process
