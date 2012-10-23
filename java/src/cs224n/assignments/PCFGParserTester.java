@@ -72,13 +72,7 @@ public class PCFGParserTester {
 			}
 			lexicon = new Lexicon(trainTrees);
 			grammar = new Grammar(trainTrees);
-			//preterminal tags are in lexicon, other tags are in grammar.
-			//I add tags list in grammar class to store all tags
-			//combine preterminal tags and other tags.
-			Set<String> tags = new HashSet<String>();
-			tags.addAll(lexicon.getAllTags());
-			tags.addAll(grammar.tags);
-			convertSet2IHm(tags);
+			convertSet2IHm(grammar.tags);
 		}
 
 		@Override
