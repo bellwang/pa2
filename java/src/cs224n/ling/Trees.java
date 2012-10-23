@@ -30,6 +30,12 @@ public class Trees {
 				transformedLabel = new String(transformedLabel.substring(0,indexOfHypen));
 			//End of TODO
 			
+			//TODO: handle the Hypen Case for unannonation
+			int indexOfDash = transformedLabel.indexOf("_");
+			if(indexOfDash > 0 && !tree.isLeaf())
+				transformedLabel = new String(transformedLabel.substring(0,indexOfDash));
+			//End of TODO
+			
 			int cutIndex = transformedLabel.indexOf('-');
 			int cutIndex2 = transformedLabel.indexOf('=');
 			if (cutIndex2 > 0 && (cutIndex2 < cutIndex || cutIndex == -1))
