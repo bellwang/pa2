@@ -420,17 +420,20 @@ public class PCFGParserTester {
 				for( Tree<String> Sibling: Parent.getChildren()){
 					if(Sibling == null) continue;
 					if(Sibling.isLeaf()) continue;
-					Input_Tree.setLabel(cur_label + "_" + Sibling.getLabel() );				
-				}				
+					cur_label+="_" + Sibling.getLabel();		
+				}
+				Input_Tree.setLabel(cur_label);		
 			}
+			
 						
 			for( Tree<String> Child: Input_Tree.getChildren()){
 				HorizonOnly_Markov(Child, Input_Tree);
 			}			
 		}
 		
-		private static void Horizon_Markov2V(Tree<String> Input_Tree, Tree<String> Parent, Tree<String> GrandParent){
+		private static void Horizon_Markov2V(Tree<String> Input_Tree, Tree<String> Parent,String parentTag, String GrandparentTag){
 			String cur_label = Input_Tree.getLabel();
+			String backup = cur_label;
 			if(Input_Tree.isLeaf()) return;
 			
 			//horizontal
@@ -438,15 +441,15 @@ public class PCFGParserTester {
 				for( Tree<String> Sibling: Parent.getChildren()){
 					if(Sibling == null) continue;
 					if(Sibling.isLeaf()) continue;
-					Input_Tree.setLabel(cur_label + "_" + Sibling.getLabel() );				
+					cur_label+= "_" + Sibling.getLabel();
 				}				
 			}
 			
 			//2nd order vertical
-			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent.getLabel()) + (GrandParent==null?"":"^"+GrandParent.getLabel()));
+			Input_Tree.setLabel(cur_label + (Parent==null?"":"^"+Parent.getLabel()) + (GrandparentTag==null?"":"^"+GrandparentTag));
 			
 			for( Tree<String> Child: Input_Tree.getChildren()){
-				Horizon_Markov2V(Child, Input_Tree, Parent);
+				Horizon_Markov2V(Child, Input_Tree, backup, parentTag);
 			}			
 		}
 		
@@ -459,7 +462,7 @@ public class PCFGParserTester {
 			
 			//HorizonOnly_Markov(unAnnotatedTree, null);
 			//Markov2(unAnnotatedTree, null, null);
-			Horizon_Markov2V(unAnnotatedTree, null, null);
+			Horizon_Markov2V(unAnnotatedTree, null, null, null);
 			
 			// TODO : mark nodes with the label of their parent nodes, giving a second
 			// order vertical markov process
